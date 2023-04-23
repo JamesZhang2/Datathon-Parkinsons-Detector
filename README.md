@@ -4,3 +4,4 @@ Authors:
 
 - James Zhang
 - Abby Kim
+- Lisa Li
