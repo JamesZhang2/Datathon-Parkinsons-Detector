@@ -3,3 +3,4 @@
 Authors:
 
 - James Zhang
+- Abby Kim
