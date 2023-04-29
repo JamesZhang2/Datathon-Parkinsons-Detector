@@ -99,6 +99,9 @@ p_cnn = init_model(40)
 if uploaded_file is not None:
     # Open the uploaded image using PIL
     image = Image.open(uploaded_file)
+    # print(image.mode)
+    if image.mode != "RGB":
+        image = image.convert("RGB")
     prediction = p_cnn.predict(image)
     # Display the image in the app
     st.image(image, caption="Uploaded Image", use_column_width=True)
