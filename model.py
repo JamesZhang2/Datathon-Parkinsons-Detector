@@ -16,28 +16,15 @@ patient_meander_dir = "data/Patient/PatientMeander"
 healthy_spiral_dir = "data/Healthy/HealthySpiral"
 patient_spiral_dir = "data/Patient/PatientSpiral"
 
-healthy_dir = healthy_spiral_dir
-patient_dir = patient_spiral_dir
+healthy_dir = healthy_circle_dir
+patient_dir = patient_circle_dir
 
 # healthy - 0, parkinson's - 1
 healthy_filenames = os.listdir(healthy_dir)  # list of strings
 patient_filenames = os.listdir(patient_dir)
 
-train_healthy, test_healthy = train_test_split(healthy_filenames, test_size=0.2)
-train_patient, test_patient = train_test_split(patient_filenames, test_size=0.2)
 
-transform = transforms.Compose(
-    [
-        transforms.Resize((224, 224)),  # Resize the image to 224x224 pixels
-        transforms.ToTensor(),  # Convert the image to a PyTorch tensor
-        transforms.Normalize(
-            mean=[0.5, 0.5, 0.5], std=[0.5, 0.5, 0.5]
-        ),  # Normalize the tensor values
-    ]
-)
-
-
-def load_imgs(dir, file_names):
+def load_imgs(dir, file_names, transform):
     ret = []
     for file_name in file_names:
         image_path = os.path.join(dir, file_name)
@@ -51,30 +38,8 @@ def load_imgs(dir, file_names):
     return ret_tensor  # torch.Tensor with shape (n, 3, 224, 224)
 
 
-# 4D tensors
-train_healthy_imgs = load_imgs(healthy_dir, train_healthy)
-test_healthy_imgs = load_imgs(healthy_dir, test_healthy)
-train_patient_imgs = load_imgs(patient_dir, train_patient)
-test_patient_imgs = load_imgs(patient_dir, test_patient)
-
-train_imgs = torch.cat((train_healthy_imgs, train_patient_imgs), dim=0)
-# print(train_imgs.shape)  # tensor with size (n, 3, 224, 224)
-train_labels = torch.tensor(
-    [0] * len(train_healthy_imgs) + [1] * len(train_patient_imgs)
-)
-
-test_imgs = torch.cat((test_healthy_imgs, test_patient_imgs), dim=0)
-test_labels = torch.tensor([0] * len(test_healthy_imgs) + [1] * len(test_patient_imgs))
-
-train_set = TensorDataset(train_imgs, train_labels)
-train_loader = torch.utils.data.DataLoader(train_set, shuffle=True)
-
-test_set = TensorDataset(test_imgs, test_labels)
-test_loader = torch.utils.data.DataLoader(test_set, shuffle=True)
-
-
-# Define the CNN architecture
 class Net(nn.Module):
+    # Define the CNN architecture
     def __init__(self):
         super(Net, self).__init__()
         self.conv1 = nn.Conv2d(3, 32, 3)  # in_channel, out_channel, ker_size
@@ -96,11 +61,6 @@ class Net(nn.Module):
         return x
 
 
-cnn = Net()
-criterion = nn.CrossEntropyLoss()
-optimizer = torch.optim.SGD(cnn.parameters(), lr=0.001)
-
-
 def compute_accuracy(model, data_loader):
     # Set the model to evaluation mode
     model.eval()
@@ -109,6 +69,7 @@ def compute_accuracy(model, data_loader):
     correct = 0
 
     for inputs, labels in data_loader:
+        # print(inputs.shape)  # (1, 3, 224, 224)
         outputs = model(inputs)
 
         # Compute the predicted labels
@@ -125,34 +86,98 @@ def compute_accuracy(model, data_loader):
     return accuracy
 
 
-# Training phase
+class ParkinsonPredictor:
+    def __init__(self, healthy_filenames, patient_filenames, num_epochs):
+        train_healthy, test_healthy = train_test_split(healthy_filenames, test_size=0.2)
+        train_patient, test_patient = train_test_split(patient_filenames, test_size=0.2)
 
-num_epochs = 40
+        self.transform = transforms.Compose(
+            [
+                transforms.Resize((224, 224)),  # Resize the image to 224x224 pixels
+                transforms.ToTensor(),  # Convert the image to a PyTorch tensor
+                transforms.Normalize(
+                    mean=[0.5, 0.5, 0.5], std=[0.5, 0.5, 0.5]
+                ),  # Normalize the tensor values
+            ]
+        )
 
-for epoch in range(num_epochs):
-    for images, labels in train_loader:
-        # Clear the gradients
-        optimizer.zero_grad()
+        # Load images as 4D tensors
+        train_healthy_imgs = load_imgs(healthy_dir, train_healthy, self.transform)
+        test_healthy_imgs = load_imgs(healthy_dir, test_healthy, self.transform)
+        train_patient_imgs = load_imgs(patient_dir, train_patient, self.transform)
+        test_patient_imgs = load_imgs(patient_dir, test_patient, self.transform)
 
-        # Pass the batch of images through the CNN
-        outputs = cnn(images)
+        train_imgs = torch.cat((train_healthy_imgs, train_patient_imgs), dim=0)
+        # print(train_imgs.shape)  # tensor with size (n, 3, 224, 224)
+        train_labels = torch.tensor(
+            [0] * len(train_healthy_imgs) + [1] * len(train_patient_imgs)
+        )
 
-        # Compute the loss
-        loss = criterion(outputs, labels)
+        test_imgs = torch.cat((test_healthy_imgs, test_patient_imgs), dim=0)
+        test_labels = torch.tensor(
+            [0] * len(test_healthy_imgs) + [1] * len(test_patient_imgs)
+        )
 
-        # Compute the gradients
-        loss.backward()
+        train_set = TensorDataset(train_imgs, train_labels)
+        train_loader = torch.utils.data.DataLoader(train_set, shuffle=True)
 
-        # Update the weights
-        optimizer.step()
+        test_set = TensorDataset(test_imgs, test_labels)
+        test_loader = torch.utils.data.DataLoader(test_set, shuffle=True)
 
-    # Print some information about the training progress
-    accuracy = compute_accuracy(cnn, train_loader)
-    print(
-        f"Epoch {epoch+1}/{num_epochs}, Loss: {loss.item():.4f}, Accuracy: {accuracy * 100:.2f}%"
-    )
+        self.cnn = Net()
+        criterion = nn.CrossEntropyLoss()
+        optimizer = torch.optim.SGD(self.cnn.parameters(), lr=0.001)
 
-# Testing our model
+        # Training phase
 
-accuracy = compute_accuracy(cnn, test_loader)
-print(f"Test accuracy: {accuracy * 100:.2f}%")
+        for epoch in range(num_epochs):
+            for images, labels in train_loader:
+                # Clear the gradients
+                optimizer.zero_grad()
+
+                # Pass the batch of images through the CNN
+                outputs = self.cnn(images)
+
+                # Compute the loss
+                loss = criterion(outputs, labels)
+
+                # Compute the gradients
+                loss.backward()
+
+                # Update the weights
+                optimizer.step()
+
+            # Print some information about the training progress
+            accuracy = compute_accuracy(self.cnn, train_loader)
+            print(
+                f"Epoch {epoch+1}/{num_epochs}, Loss: {loss.item():.4f}, Accuracy: {accuracy * 100:.2f}%"
+            )
+
+        # Testing
+
+        accuracy = compute_accuracy(self.cnn, test_loader)
+        print(f"Test accuracy: {accuracy * 100:.2f}%")
+
+    def predict(self, image):
+        """Return 0 if healthy, 1 if patient"""
+        image_tensor = torch.stack([self.transform(image)], dim=0)
+        # print(image_tensor.shape)  # (1, 3, 224, 224)
+        self.cnn.eval()
+        outputs = self.cnn.forward(image_tensor)
+
+        # Compute the predicted labels
+        _, predicted = torch.max(outputs, 1)
+        return predicted
+
+
+pp = ParkinsonPredictor(healthy_filenames, patient_filenames, num_epochs=10)
+image1 = Image.open("test/healthy/circA-P18.jpg")
+image2 = Image.open("test/patient/circA-P15.jpg")
+if pp.predict(image1) == 0:
+    print("Healthy!")
+else:
+    print("Patient!")
+if pp.predict(image2) == 0:
+    print("Healthy!")
+else:
+    print("Patient!")
