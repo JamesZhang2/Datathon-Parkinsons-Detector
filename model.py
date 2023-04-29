@@ -16,13 +16,6 @@ patient_meander_dir = "data/Patient/PatientMeander"
 healthy_spiral_dir = "data/Healthy/HealthySpiral"
 patient_spiral_dir = "data/Patient/PatientSpiral"
 
-healthy_dir = healthy_circle_dir
-patient_dir = patient_circle_dir
-
-# healthy - 0, parkinson's - 1
-healthy_filenames = os.listdir(healthy_dir)  # list of strings
-patient_filenames = os.listdir(patient_dir)
-
 
 def load_imgs(dir, file_names, transform):
     ret = []
@@ -87,7 +80,14 @@ def compute_accuracy(model, data_loader):
 
 
 class ParkinsonPredictor:
-    def __init__(self, healthy_filenames, patient_filenames, num_epochs):
+    def __init__(self, num_epochs):
+        healthy_dir = healthy_meander_dir
+        patient_dir = patient_meander_dir
+
+        # healthy - 0, parkinson's - 1
+        healthy_filenames = os.listdir(healthy_dir)  # list of strings
+        patient_filenames = os.listdir(patient_dir)
+
         train_healthy, test_healthy = train_test_split(healthy_filenames, test_size=0.2)
         train_patient, test_patient = train_test_split(patient_filenames, test_size=0.2)
 
@@ -168,16 +168,3 @@ class ParkinsonPredictor:
         # Compute the predicted labels
         _, predicted = torch.max(outputs, 1)
         return predicted
-
-
-pp = ParkinsonPredictor(healthy_filenames, patient_filenames, num_epochs=10)
-image1 = Image.open("test/healthy/circA-P18.jpg")
-image2 = Image.open("test/patient/circA-P15.jpg")
-if pp.predict(image1) == 0:
-    print("Healthy!")
-else:
-    print("Patient!")
-if pp.predict(image2) == 0:
-    print("Healthy!")
-else:
-    print("Patient!")

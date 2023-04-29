@@ -1,4 +1,5 @@
 import streamlit as st
+from model import ParkinsonPredictor
 
 # import pandas as pd
 # import numpy as np
@@ -85,10 +86,25 @@ st.title("Image Uploader")
 # Create a file uploader widget that accepts image files
 uploaded_file = st.file_uploader("Choose an image file", type=["jpg", "jpeg", "png"])
 
+
+@st.cache_data
+def init_model():
+    print("initializing model")
+    return ParkinsonPredictor(1)
+
+
+p_cnn = init_model()
+
 # If an image file was uploaded, display it
 if uploaded_file is not None:
     # Open the uploaded image using PIL
     image = Image.open(uploaded_file)
-
+    prediction = p_cnn.predict(image)
     # Display the image in the app
     st.image(image, caption="Uploaded Image", use_column_width=True)
+    if prediction == 0:
+        print("Healthy")
+        st.write("You do not have Parkinson's")
+    else:
+        print("Patient")
+        st.write("You have Parkinson's")
