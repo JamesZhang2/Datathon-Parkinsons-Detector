@@ -56,11 +56,14 @@ train_circle_labels = torch.tensor(
 
 test_circle_imgs = torch.cat((test_healthy_imgs, test_patient_imgs), dim=0)
 test_circle_labels = torch.tensor(
-    [0] * len(test_healthy_imgs) + [1] * len(train_patient_imgs)
+    [0] * len(test_healthy_imgs) + [1] * len(test_patient_imgs)
 )
 
 train_set = TensorDataset(train_circle_imgs, train_circle_labels)
 train_loader = torch.utils.data.DataLoader(train_set, shuffle=True)
+
+test_set = TensorDataset(test_circle_imgs, test_circle_labels)
+test_loader = torch.utils.data.DataLoader(test_set, shuffle=True)
 
 
 # Define the CNN architecture
@@ -89,7 +92,34 @@ cnn = Net()
 criterion = nn.CrossEntropyLoss()
 optimizer = torch.optim.SGD(cnn.parameters(), lr=0.001)
 
-num_epochs = 10
+
+def compute_accuracy(model, data_loader):
+    # Set the model to evaluation mode
+    model.eval()
+
+    total = 0
+    correct = 0
+
+    for inputs, labels in data_loader:
+        outputs = model(inputs)
+
+        # Compute the predicted labels
+        _, predicted = torch.max(outputs, 1)
+
+        # print(predicted)
+
+        # Evaluate the accuracy of the model
+        total += labels.size(0)
+        correct += (predicted == labels).sum().item()
+
+    # Compute the final accuracy
+    accuracy = correct / total
+    return accuracy
+
+
+# Training phase
+
+num_epochs = 50
 
 for epoch in range(num_epochs):
     for images, labels in train_loader:
@@ -109,4 +139,12 @@ for epoch in range(num_epochs):
         optimizer.step()
 
     # Print some information about the training progress
-    print(f"Epoch {epoch+1}/{num_epochs}, Loss: {loss.item():.4f}")
+    accuracy = compute_accuracy(cnn, train_loader)
+    print(
+        f"Epoch {epoch+1}/{num_epochs}, Loss: {loss.item():.4f}, Accuracy: {accuracy * 100:.2f}%"
+    )
+
+# Testing our model
+
+accuracy = compute_accuracy(cnn, test_loader)
+print(f"Test accuracy: {accuracy * 100:.2f}%")
