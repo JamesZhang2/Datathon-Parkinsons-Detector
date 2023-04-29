@@ -9,9 +9,12 @@ from torch.utils.data import TensorDataset
 import os
 
 
+healthy_circle_dir = "data/Healthy/Circle"
+patient_circle_dir = "data/Patient/Circle"
+
 # healthy - 0, parkinson's - 1
-healthy_circle = os.listdir("data/Healthy/Circle")  # list of strings
-patient_circle = os.listdir("data/Patient/Circle")
+healthy_circle = os.listdir(healthy_circle_dir)  # list of strings
+patient_circle = os.listdir(patient_circle_dir)
 
 circle_imgs = healthy_circle
 train_healthy, test_healthy = train_test_split(healthy_circle, test_size=0.2)
@@ -43,10 +46,10 @@ def load_imgs(dir, file_names):
 
 
 # 4D tensors
-train_healthy_imgs = load_imgs("data/Healthy/Circle", train_healthy)
-test_healthy_imgs = load_imgs("data/Healthy/Circle", test_healthy)
-train_patient_imgs = load_imgs("data/Patient/Circle", train_patient)
-test_patient_imgs = load_imgs("data/Patient/Circle", test_patient)
+train_healthy_imgs = load_imgs(healthy_circle_dir, train_healthy)
+test_healthy_imgs = load_imgs(healthy_circle_dir, test_healthy)
+train_patient_imgs = load_imgs(patient_circle_dir, train_patient)
+test_patient_imgs = load_imgs(patient_circle_dir, test_patient)
 
 train_circle_imgs = torch.cat((train_healthy_imgs, train_patient_imgs), dim=0)
 # print(train_circle_imgs.shape)  # tensor with size (n, 3, 224, 224)
@@ -119,7 +122,7 @@ def compute_accuracy(model, data_loader):
 
 # Training phase
 
-num_epochs = 50
+num_epochs = 40
 
 for epoch in range(num_epochs):
     for images, labels in train_loader:
