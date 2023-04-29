@@ -88,12 +88,12 @@ uploaded_file = st.file_uploader("Choose an image file", type=["jpg", "jpeg", "p
 
 
 @st.cache_data
-def init_model():
+def init_model(num_epochs):
     print("initializing model")
-    return ParkinsonPredictor(1)
+    return ParkinsonPredictor(num_epochs)
 
 
-p_cnn = init_model()
+p_cnn = init_model(40)
 
 # If an image file was uploaded, display it
 if uploaded_file is not None:
