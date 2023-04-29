@@ -9,16 +9,22 @@ from torch.utils.data import TensorDataset
 import os
 
 
-healthy_circle_dir = "data/Healthy/Circle"
-patient_circle_dir = "data/Patient/Circle"
+healthy_filenames_dir = "data/Healthy/Circle"
+patient_filenames_dir = "data/Patient/Circle"
+healthy_meander_dir = "data/Healthy/HealthyMeander"
+patient_meander_dir = "data/Patient/PatientMeander"
+healthy_spiral_dir = "data/Healthy/HealthySpiral"
+healthy_patient_dir = "data/Patient/PatientSpiral"
+
+healthy_dir = healthy_meander_dir
+patient_dir = patient_meander_dir
 
 # healthy - 0, parkinson's - 1
-healthy_circle = os.listdir(healthy_circle_dir)  # list of strings
-patient_circle = os.listdir(patient_circle_dir)
+healthy_filenames = os.listdir(healthy_dir)  # list of strings
+patient_filenames = os.listdir(patient_dir)
 
-circle_imgs = healthy_circle
-train_healthy, test_healthy = train_test_split(healthy_circle, test_size=0.2)
-train_patient, test_patient = train_test_split(patient_circle, test_size=0.2)
+train_healthy, test_healthy = train_test_split(healthy_filenames, test_size=0.2)
+train_patient, test_patient = train_test_split(patient_filenames, test_size=0.2)
 
 transform = transforms.Compose(
     [
@@ -46,26 +52,24 @@ def load_imgs(dir, file_names):
 
 
 # 4D tensors
-train_healthy_imgs = load_imgs(healthy_circle_dir, train_healthy)
-test_healthy_imgs = load_imgs(healthy_circle_dir, test_healthy)
-train_patient_imgs = load_imgs(patient_circle_dir, train_patient)
-test_patient_imgs = load_imgs(patient_circle_dir, test_patient)
+train_healthy_imgs = load_imgs(healthy_dir, train_healthy)
+test_healthy_imgs = load_imgs(healthy_dir, test_healthy)
+train_patient_imgs = load_imgs(patient_dir, train_patient)
+test_patient_imgs = load_imgs(patient_dir, test_patient)
 
-train_circle_imgs = torch.cat((train_healthy_imgs, train_patient_imgs), dim=0)
-# print(train_circle_imgs.shape)  # tensor with size (n, 3, 224, 224)
-train_circle_labels = torch.tensor(
+train_imgs = torch.cat((train_healthy_imgs, train_patient_imgs), dim=0)
+# print(train_imgs.shape)  # tensor with size (n, 3, 224, 224)
+train_labels = torch.tensor(
     [0] * len(train_healthy_imgs) + [1] * len(train_patient_imgs)
 )
 
-test_circle_imgs = torch.cat((test_healthy_imgs, test_patient_imgs), dim=0)
-test_circle_labels = torch.tensor(
-    [0] * len(test_healthy_imgs) + [1] * len(test_patient_imgs)
-)
+test_imgs = torch.cat((test_healthy_imgs, test_patient_imgs), dim=0)
+test_labels = torch.tensor([0] * len(test_healthy_imgs) + [1] * len(test_patient_imgs))
 
-train_set = TensorDataset(train_circle_imgs, train_circle_labels)
+train_set = TensorDataset(train_imgs, train_labels)
 train_loader = torch.utils.data.DataLoader(train_set, shuffle=True)
 
-test_set = TensorDataset(test_circle_imgs, test_circle_labels)
+test_set = TensorDataset(test_imgs, test_labels)
 test_loader = torch.utils.data.DataLoader(test_set, shuffle=True)
 
 
