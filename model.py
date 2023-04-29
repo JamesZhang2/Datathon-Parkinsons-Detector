@@ -9,15 +9,15 @@ from torch.utils.data import TensorDataset
 import os
 
 
-healthy_filenames_dir = "data/Healthy/Circle"
-patient_filenames_dir = "data/Patient/Circle"
+healthy_circle_dir = "data/Healthy/Circle"
+patient_circle_dir = "data/Patient/Circle"
 healthy_meander_dir = "data/Healthy/HealthyMeander"
 patient_meander_dir = "data/Patient/PatientMeander"
 healthy_spiral_dir = "data/Healthy/HealthySpiral"
-healthy_patient_dir = "data/Patient/PatientSpiral"
+patient_spiral_dir = "data/Patient/PatientSpiral"
 
-healthy_dir = healthy_meander_dir
-patient_dir = patient_meander_dir
+healthy_dir = healthy_spiral_dir
+patient_dir = patient_spiral_dir
 
 # healthy - 0, parkinson's - 1
 healthy_filenames = os.listdir(healthy_dir)  # list of strings
@@ -79,15 +79,16 @@ class Net(nn.Module):
         super(Net, self).__init__()
         self.conv1 = nn.Conv2d(3, 32, 3)  # in_channel, out_channel, ker_size
         self.conv2 = nn.Conv2d(32, 64, 3)
-        self.conv3 = nn.Conv2d(64, 32, 3)
-        self.pool = nn.MaxPool2d(2, 2)  # ker_size, stride
-        self.fc1 = nn.Linear(21632, 128)
+        self.conv3 = nn.Conv2d(64, 32, 3, stride=2)
+        self.pool1 = nn.MaxPool2d(2, 2)  # ker_size, stride
+        self.pool2 = nn.MaxPool2d(4, 4)
+        self.fc1 = nn.Linear(1152, 128)
         self.fc2 = nn.Linear(128, 2)
 
     def forward(self, x):
-        x = self.pool(nn.functional.relu(self.conv1(x)))
-        x = self.pool(nn.functional.relu(self.conv2(x)))
-        x = self.pool(nn.functional.relu(self.conv3(x)))
+        x = self.pool1(nn.functional.relu(self.conv1(x)))
+        x = self.pool1(nn.functional.relu(self.conv2(x)))
+        x = self.pool2(nn.functional.relu(self.conv3(x)))
         x = torch.flatten(x, 1)
         # print(x.shape)
         x = nn.functional.relu(self.fc1(x))
