@@ -40,13 +40,13 @@ class Net(nn.Module):
         self.conv3 = nn.Conv2d(64, 32, 3, stride=2)
         self.pool1 = nn.MaxPool2d(2, 2)  # ker_size, stride
         self.pool2 = nn.MaxPool2d(4, 4)
-        self.fc1 = nn.Linear(1152, 128)
+        self.fc1 = nn.Linear(5408, 128)
         self.fc2 = nn.Linear(128, 2)
 
     def forward(self, x):
         x = self.pool1(nn.functional.relu(self.conv1(x)))
         x = self.pool1(nn.functional.relu(self.conv2(x)))
-        x = self.pool2(nn.functional.relu(self.conv3(x)))
+        x = self.pool1(nn.functional.relu(self.conv3(x)))
         x = torch.flatten(x, 1)
         # print(x.shape)
         x = nn.functional.relu(self.fc1(x))
