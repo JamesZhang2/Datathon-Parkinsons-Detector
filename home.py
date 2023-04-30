@@ -16,7 +16,6 @@ st.markdown(
     font-size:80px !important;
     font-family:Trebuchet MS;
     font-color:#63534f;
-    
 }
 .med-font {
     font-size:50px !important;
@@ -25,6 +24,11 @@ st.markdown(
 .small-font {
     font-size:35px !important;
     font-family:Roboto;
+}
+.light-green {
+    font-size:30px;
+    font-family:Sans Serif;
+    background-color:#C7F6B6
 }
 </style>
 """,
@@ -93,21 +97,32 @@ left_col.markdown(
     <li>Take a good picture of the drawing, with correct orientation and cropping
     <li>Upload the image and see the result!
     </ol>
-    <p>Template:</p>
+    </br>
+    </br>
     """,
     unsafe_allow_html=True,
 )
 
+with left_col:
+    l_left_col, l_right_col = st.columns(2, gap="small")
+
 template = Image.open("meanderTemplate.jpg")
 
 # Display the template in the app
-left_col.image(template, caption="Template", width=200)
+l_left_col.write("Template:")
+l_left_col.image(template, width=200)
 
 # file_path = "meanderTemplate.png"
 # button = st.download_button(label="Download Template", data=file_path)
 
-with open("meanderTemplate.png", "rb") as image:
-    st.download_button("Download Template", data=image, file_name="template.jpg")
+with open("meanderTemplate.jpg", "rb") as image:
+    l_left_col.download_button(
+        "Download Template", data=image, file_name="template.jpg"
+    )
+
+l_right_col.write("Example:")
+example = Image.open("example.jpg")
+l_right_col.image(example, width=200)
 
 # Right column
 
@@ -121,7 +136,7 @@ uploaded_file = right_col.file_uploader(
 
 @st.cache_data
 def init_model(num_epochs):
-    print("initializing model")
+    print("Initializing model")
     return ParkinsonPredictor(num_epochs)
 
 
@@ -136,10 +151,12 @@ if uploaded_file is not None:
         image = image.convert("RGB")
     prediction = p_cnn.predict(image)
     # Display the image in the app
-    right_col.image(image, caption="Uploaded Image", width=400)
+    right_col.image(image, caption="Uploaded Image", width=300)
+
+    # left_col
     if prediction == 0:
         print("Healthy")
-        st.header("You do not have Parkinson's")
+        right_col.header("You do not have Parkinson's")
     else:
         print("Patient")
-        st.header("You have Parkinson's")
+        right_col.header("You have Parkinson's")

@@ -11,10 +11,10 @@ import os
 
 healthy_circle_dir = "data/Healthy/Circle"
 patient_circle_dir = "data/Patient/Circle"
-healthy_meander_dir = "data/Healthy/HealthyMeander"
-patient_meander_dir = "data/Patient/PatientMeander"
-healthy_spiral_dir = "data/Healthy/HealthySpiral"
-patient_spiral_dir = "data/Patient/PatientSpiral"
+healthy_meander_dir = "data/Healthy/Meander"
+patient_meander_dir = "data/Patient/Meander"
+healthy_spiral_dir = "data/Healthy/Spiral"
+patient_spiral_dir = "data/Patient/Spiral"
 
 
 def load_imgs(dir, file_names, transform):
@@ -40,12 +40,12 @@ class Net(nn.Module):
         self.conv3 = nn.Conv2d(64, 32, 3, stride=2)
         self.pool1 = nn.MaxPool2d(2, 2)  # ker_size, stride
         self.pool2 = nn.MaxPool2d(4, 4)
-        self.fc1 = nn.Linear(5408, 128)
+        self.fc1 = nn.Linear(1152, 128)
         self.fc2 = nn.Linear(128, 2)
 
     def forward(self, x):
         x = self.pool1(nn.functional.relu(self.conv1(x)))
-        x = self.pool1(nn.functional.relu(self.conv2(x)))
+        x = self.pool2(nn.functional.relu(self.conv2(x)))
         x = self.pool1(nn.functional.relu(self.conv3(x)))
         x = torch.flatten(x, 1)
         # print(x.shape)
@@ -80,7 +80,16 @@ def compute_accuracy(model, data_loader):
 
 
 class ParkinsonPredictor:
-    def __init__(self, num_epochs):
+    def __init__(self, num_epochs, retrain=False, save=True):
+        if (not retrain) and (os.path.exists("model.pth")):
+            print("Loading saved model")
+            self.cnn = Net()
+            self.cnn.load_state_dict(torch.load("model.pth"))
+        else:
+            self.cnn = self.train_model(num_epochs, save)
+
+    def train_model(self, num_epochs, save):
+        print("Training model")
         healthy_dir = healthy_meander_dir
         patient_dir = patient_meander_dir
 
@@ -129,7 +138,6 @@ class ParkinsonPredictor:
         optimizer = torch.optim.SGD(self.cnn.parameters(), lr=0.001)
 
         # Training phase
-
         for epoch in range(num_epochs):
             for images, labels in train_loader:
                 # Clear the gradients
@@ -154,9 +162,13 @@ class ParkinsonPredictor:
             )
 
         # Testing
-
         accuracy = compute_accuracy(self.cnn, test_loader)
         print(f"Test accuracy: {accuracy * 100:.2f}%")
+
+        # Save the model
+        if save:
+            print("Saving model to model.pth")
+            torch.save(self.cnn.state_dict(), "model.pth")
 
     def predict(self, image):
         """Return 0 if healthy, 1 if patient"""
