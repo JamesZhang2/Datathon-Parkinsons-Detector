@@ -44,9 +44,7 @@ st.markdown(
         text-align: center;
         '>
     <p class="big-font">Do you have Parkinson\'s?</p>
-    
     </div>
-    
     """,
     unsafe_allow_html=True,
 )

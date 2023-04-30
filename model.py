@@ -81,12 +81,22 @@ def compute_accuracy(model, data_loader):
 
 class ParkinsonPredictor:
     def __init__(self, num_epochs, retrain=False, save=True):
+        self.transform = transforms.Compose(
+            [
+                transforms.Resize((224, 224)),  # Resize the image to 224x224 pixels
+                transforms.ToTensor(),  # Convert the image to a PyTorch tensor
+                transforms.Normalize(
+                    mean=[0.5, 0.5, 0.5], std=[0.5, 0.5, 0.5]
+                ),  # Normalize the tensor values
+            ]
+        )
+
         if (not retrain) and (os.path.exists("model.pth")):
             print("Loading saved model")
             self.cnn = Net()
             self.cnn.load_state_dict(torch.load("model.pth"))
         else:
-            self.cnn = self.train_model(num_epochs, save)
+            self.train_model(num_epochs, save)
 
     def train_model(self, num_epochs, save):
         print("Training model")
@@ -99,16 +109,6 @@ class ParkinsonPredictor:
 
         train_healthy, test_healthy = train_test_split(healthy_filenames, test_size=0.2)
         train_patient, test_patient = train_test_split(patient_filenames, test_size=0.2)
-
-        self.transform = transforms.Compose(
-            [
-                transforms.Resize((224, 224)),  # Resize the image to 224x224 pixels
-                transforms.ToTensor(),  # Convert the image to a PyTorch tensor
-                transforms.Normalize(
-                    mean=[0.5, 0.5, 0.5], std=[0.5, 0.5, 0.5]
-                ),  # Normalize the tensor values
-            ]
-        )
 
         # Load images as 4D tensors
         train_healthy_imgs = load_imgs(healthy_dir, train_healthy, self.transform)
