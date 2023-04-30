@@ -8,6 +8,8 @@ from torchvision import transforms
 from torch.utils.data import TensorDataset
 import os
 
+import numpy as np
+
 
 healthy_circle_dir = "data/Healthy/Circle"
 patient_circle_dir = "data/Patient/Circle"
@@ -60,22 +62,39 @@ def compute_accuracy(model, data_loader):
 
     total = 0
     correct = 0
+    falseP = 0
+    falseN = 0
+    trueP = 0
+    trueN = 0
 
-    for inputs, labels in data_loader:
+    for inputs, label in data_loader:
         # print(inputs.shape)  # (1, 3, 224, 224)
         outputs = model(inputs)
 
-        # Compute the predicted labels
+        # Compute the predicted label
         _, predicted = torch.max(outputs, 1)
 
-        # print(predicted)
+        predicted = predicted.item()
+        label = label.item()
 
         # Evaluate the accuracy of the model
-        total += labels.size(0)
-        correct += (predicted == labels).sum().item()
+        total += 1
+        trueP += predicted == label and label == 1
+        trueN += predicted == label and label == 0
+        falseP += predicted != label and label == 1
+        falseN += predicted != label and label == 0
+        correct += predicted == label
 
     # Compute the final accuracy
     accuracy = correct / total
+    # print("True Positive:", np.round(trueP / (trueP + falseP), 4))
+    # print("True Negative:", np.round(trueN / (trueN + falseN), 4))
+    # print("False Positive:", np.round(falseP / (trueP + falseP), 4))
+    # print("False Negative:", np.round(falseN / (trueN + falseN), 4))
+    print("True Positive:", trueP)
+    print("True Negative:", trueN)
+    print("False Positive:", falseP)
+    print("False Negative:", falseN)
     return accuracy
 
 

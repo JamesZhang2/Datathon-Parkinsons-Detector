@@ -38,8 +38,8 @@ st.markdown(
 st.markdown(
     """
     <div style=
-        'background-color: #f5d0c6; 
-        padding: 10px;
+        'background-color: #e0f1ff; 
+        padding:10px;
         margin-top: -40px;
         text-align: center;
         '>
@@ -59,6 +59,7 @@ st.markdown(
         'background-color: #FFFFFF; 
         padding: 10px;
         text-align: center;
+        border-radius: 10px;
         '>
     <p class="med-font">Draw some images to find out!✨📝</p>
     """,
@@ -138,7 +139,7 @@ def init_model(num_epochs):
     return ParkinsonPredictor(num_epochs)
 
 
-p_cnn = init_model(1)
+p_cnn = init_model(40)
 
 # If an image file was uploaded, display it
 if uploaded_file is not None:
