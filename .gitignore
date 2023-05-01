@@ -4,3 +4,4 @@ data/
 .vscode/
 test/
 __pycache__/
+model_*
