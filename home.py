@@ -15,7 +15,7 @@ st.markdown(
 .big-font {
     font-size:80px !important;
     font-family:Trebuchet MS;
-    font-color:#63534f;
+    color:#63534f;
 }
 .med-font {
     font-size:50px !important;
@@ -25,10 +25,15 @@ st.markdown(
     font-size:35px !important;
     font-family:Roboto;
 }
-.light-green {
-    font-size:30px;
-    font-family:Sans Serif;
-    background-color:#C7F6B6
+.green-text {
+    font-size:30px !important;
+    font-family:Trebuchet MS;
+    color: #008000;
+}
+.red-text {
+    font-size:30px !important;
+    font-family:Trebuchet MS;
+    color: #C00000;
 }
 </style>
 """,
@@ -155,7 +160,16 @@ if uploaded_file is not None:
     # left_col
     if prediction == 0:
         print("Healthy")
-        right_col.header("You do not have Parkinson's")
+        right_col.markdown(
+            """<p class="green-text">You probably do not have Parkinson's.</p>""",
+            unsafe_allow_html=True,
+        )
     else:
-        print("Patient")
-        right_col.header("You have Parkinson's")
+        right_col.markdown(
+            """<p class="red-text">You may have Parkinson's. Go visit a doctor.</p>""",
+            unsafe_allow_html=True,
+        )
+
+    right_col.write(
+        "Disclaimer: Please note that this model is intended for informational purposes only and may not be accurate or up-to-date. The model is not intended to replace professional medical advice, diagnosis, or treatment. Always consult a qualified healthcare provider for any questions you may have regarding a medical condition. Never disregard professional medical advice or delay in seeking it because of this medical model."
+    )
