@@ -20,3 +20,14 @@ This project aims to develop a Parkinson's Disease detection system using a subj
 ## Disclaimer
 
 Please note that this model is intended for informational purposes only and may not be accurate or up-to-date. The model is not intended to replace professional medical advice, diagnosis, or treatment. Always consult a qualified healthcare provider for any questions you may have regarding a medical condition. Never disregard professional medical advice or delay in seeking it because of this medical model.
+
+## Running our project
+
+To run our project, please follow the instructions below:
+
+- `git clone https://github.com/JamesZhang2/Datathon.git`
+- `cd Datathon`
+- Create a virtual environment: `python -m venv venv`
+- Activate the virtual environment: `source venv/bin/activate` on Mac, `venv\Scripts\activate` on Windows
+- Install dependencies: `pip install -r requirements.txt`
+- Run frontend: `streamlit run home.py`

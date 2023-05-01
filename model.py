@@ -110,10 +110,10 @@ class ParkinsonPredictor:
             ]
         )
 
-        if (not retrain) and (os.path.exists("model.pth")):
+        if (not retrain) and (os.path.exists("model/model.pth")):
             print("Loading saved model")
             self.cnn = Net()
-            self.cnn.load_state_dict(torch.load("model.pth"))
+            self.cnn.load_state_dict(torch.load("model/model.pth"))
         else:
             self.train_model(num_epochs, save)
 
@@ -187,7 +187,7 @@ class ParkinsonPredictor:
         # Save the model
         if save:
             print("Saving model to model.pth")
-            torch.save(self.cnn.state_dict(), "model.pth")
+            torch.save(self.cnn.state_dict(), "model/model.pth")
 
     def predict(self, image):
         """Return 0 if healthy, 1 if patient"""
