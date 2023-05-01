@@ -165,6 +165,7 @@ if uploaded_file is not None:
             unsafe_allow_html=True,
         )
     else:
+        print("Patient")
         right_col.markdown(
             """<p class="red-text">You may have Parkinson's. Go visit a doctor.</p>""",
             unsafe_allow_html=True,
