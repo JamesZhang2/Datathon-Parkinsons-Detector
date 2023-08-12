@@ -1,6 +1,6 @@
 # Cornell Data Science Datathon Spring 2023
 
-Authors:
+## Authors
 
 - James Zhang
 - Abby Kim
@@ -31,3 +31,7 @@ To run our project, please follow the instructions below:
 - Activate the virtual environment: `source venv/bin/activate` on Mac, `venv\Scripts\activate` on Windows
 - Install dependencies: `pip install -r requirements.txt`
 - Run frontend: `streamlit run home.py`
+
+## Acknowledgements
+
+Parts of the introduction and code are written with the help of ChatGPT.
